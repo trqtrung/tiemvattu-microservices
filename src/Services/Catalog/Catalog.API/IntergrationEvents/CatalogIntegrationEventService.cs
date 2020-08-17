@@ -1,12 +1,12 @@
 ﻿using BusEvent.Abstractions;
 using BusEvent.Events;
 using Catalog.API.Infrastructure;
+using IntergrationEventLogEF.Services;
+using IntergrationEventLogEF.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.Data.Common;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Catalog.API.IntergrationEvents
@@ -22,8 +22,7 @@ namespace Catalog.API.IntergrationEvents
         public CatalogIntegrationEventService(
             ILogger<CatalogIntegrationEventService> logger,
             IEventBus eventBus,
-            CatalogContext catalogContext,
-            Func<DbConnection, IIntegrationEventLogService> integrationEventLogServiceFactory)
+            CatalogContext catalogContext, Func<DbConnection, IIntegrationEventLogService> integrationEventLogServiceFactory)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _catalogContext = catalogContext ?? throw new ArgumentNullException(nameof(catalogContext));

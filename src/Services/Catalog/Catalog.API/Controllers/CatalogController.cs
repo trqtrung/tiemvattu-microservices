@@ -1,4 +1,6 @@
-﻿using Catalog.API.Infrastructure;
+﻿using BusEvent.Abstractions;
+using Catalog.API.Extensions;
+using Catalog.API.Infrastructure;
 using Catalog.API.IntergrationEvents;
 using Catalog.API.IntergrationEvents.Events;
 using Catalog.API.Model;
@@ -24,7 +26,6 @@ namespace Catalog.API.Controllers
             _catalogContext = context ?? throw new ArgumentNullException(nameof(context));
             _catalogIntegrationEventService = catalogIntegrationEventService ?? throw new ArgumentNullException(nameof(catalogIntegrationEventService));
             _settings = settings.Value;
-
             context.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
         }
 
@@ -86,6 +87,7 @@ namespace Catalog.API.Controllers
 
                 // Publish through the Event Bus and mark the saved event as published
                 await _catalogIntegrationEventService.PublishThroughEventBusAsync(priceChangedEvent);
+
             }
             else // Just save the updated product because the Product's Price hasn't changed.
             {

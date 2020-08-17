@@ -33,6 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\IntergrationEventLogEF\IntergrationEventLogEF.csproj" />
     <ProjectReference Include="..\..\..\BusEvent\BusEvent.csproj" />
   </ItemGroup>
 
