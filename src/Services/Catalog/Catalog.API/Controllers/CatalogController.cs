@@ -4,10 +4,13 @@ using Catalog.API.Infrastructure;
 using Catalog.API.IntergrationEvents;
 using Catalog.API.IntergrationEvents.Events;
 using Catalog.API.Model;
+using Catalog.API.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -95,6 +98,47 @@ namespace Catalog.API.Controllers
             }
 
             return CreatedAtAction(nameof(ItemByIdAsync), new { id = productToUpdate.Id }, null);
+        }
+
+        // GET api/v1/[controller]/items/type/1/brand[?pageSize=3&pageIndex=10]
+        [HttpGet]
+        [Route("items/type/{catalogTypeId}/brand/{catalogBrandId:int?}")]
+        [ProducesResponseType(typeof(PaginatedItemsViewModel<CatalogItem>), (int)HttpStatusCode.OK)]
+        public async Task<ActionResult<PaginatedItemsViewModel<CatalogItem>>> ItemsByTypeIdAndBrandIdAsync(int catalogTypeId, int? catalogBrandId, [FromQuery]int pageSize = 10, [FromQuery]int pageIndex = 0)
+        {
+            var root = (IQueryable<CatalogItem>)_catalogContext.CatalogItems;
+
+            root = root.Where(ci => ci.CatalogTypeId == catalogTypeId);
+
+            if (catalogBrandId.HasValue)
+            {
+                root = root.Where(ci => ci.CatalogBrandId == catalogBrandId);
+            }
+
+            var totalItems = await root
+                .LongCountAsync();
+
+            var itemsOnPage = await root
+                .Skip(pageSize * pageIndex)
+                .Take(pageSize)
+                .ToListAsync();
+
+            itemsOnPage = ChangeUriPlaceholder(itemsOnPage);
+
+            return new PaginatedItemsViewModel<CatalogItem>(pageIndex, pageSize, totalItems, itemsOnPage);
+        }
+
+        private List<CatalogItem> ChangeUriPlaceholder(List<CatalogItem> items)
+        {
+            var baseUri = _settings.PicBaseUrl;
+            var azureStorageEnabled = _settings.AzureStorageEnabled;
+
+            foreach (var item in items)
+            {
+                item.FillProductUrl(baseUri, azureStorageEnabled: azureStorageEnabled);
+            }
+
+            return items;
         }
     }
 }
